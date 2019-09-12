@@ -1,0 +1,96 @@
+
+{% extends "layout.html" %}
+
+{% block log %}
+<li class="nav-item nav-link" >log</li>
+{% endblock %}
+
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">{{budget.budgetname}}   </legend>
+                <div class="form-group">
+                    {{ form.income.label(class="form-control-label") }}
+
+                    {% if form.income.errors %}
+                        {{ form.income(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.income.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.income(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.expense.label(class="form-control-label") }}
+                    {% if form.expense.errors %}
+                        {{ form.expense(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.expense.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.expense(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">Description</label>
+                    <select class="form-control" id="exampleFormControlSelect1">
+                        {{ form.scrf_token }}
+                        {{ form.description.name }}
+
+                        <div>{% for error in form.description.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% for d in desc.name %}
+                        <option>d</option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+        </form>
+    </div>
+
+{% endblock content %}
+
+{% block balance %}
+Your current balance is: {{budget.bal}}
+{% endblock balance %}
+
+{% block to_see %}
+<a class="list-group-item list-group-item-light" href="{{ url_for('analyze_bud', budget_id=budget.id) }}">Analyze Budget</a>
+{% endblock %}
+
+{% block button_del %}
+    <button type="button" class="list-group-item list-group-item-light" data-toggle="modal" data-target="#deleteModal">Delete Budget</button>
+<!-- Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Delete Budget?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('del_budget', budget_id=budget.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

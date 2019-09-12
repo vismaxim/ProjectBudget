@@ -1,0 +1,11 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    {% for u in my_users %}
+
+            <div class="article-metadata">
+              <a class="mr-2" href="#">{{ u.username }}</a>
+            </div>
+
+    {% endfor %}
+{% endblock content %}
