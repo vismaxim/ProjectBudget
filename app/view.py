@@ -2,7 +2,7 @@ import os
 from app import app, db, bcrypt
 from flask import render_template, flash, url_for, redirect, request
 from forms import RegistrationForm, LoginForm, AddUserForm, BalanceForm, CreateBudgetForm, AnalyzeForm
-
+from datetime import timedelta, datetime, date
 from flask_login import login_user, current_user, logout_user, login_required
 from models import Users, Transactions, Budgets, Descriptions
 
@@ -131,10 +131,30 @@ def analyze_bud(budget_id):
     # desc = Descriptions.query.get
 
     if form.validate_on_submit():
-        inc = (db.session.query(db.func.sum(Transactions.income)), Transactions.query.filter_by(budget_id=budget_id)
-               .filter(Transactions.date >= form.datestart).filter(Transactions.date <= form.dateend))
-        income = db.session.query(db.func.sum(Transactions.income)).filter_by(budget_id=budget_id).scalar()
-        return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form, inc=inc, income=income)
+        one_day = timedelta(1)
+
+        if form.filtr.data != None:
+
+            income = db.session.query(db.func.sum(Transactions.income)). filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(Transactions.date < (
+                    form.dateend.data + one_day)).filter(Transactions.description == str(form.filtr.data)).scalar()
+            expense = db.session.query(db.func.sum(Transactions.expense)). filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(Transactions.date < (
+                    form.dateend.data + one_day)).filter(Transactions.description == str(form.filtr.data)).scalar()
+        else:
+            income = db.session.query(db.func.sum(Transactions.income)). filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(
+                Transactions.date < (form.dateend.data + one_day)).scalar()
+            expense = db.session.query(db.func.sum(Transactions.expense)). filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(
+                Transactions.date < (form.dateend.data + one_day)).scalar()
+
+
+        return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form, income=income, expense=expense)
     return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form)
 
 
