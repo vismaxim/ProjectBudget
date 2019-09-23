@@ -39,22 +39,20 @@
                     {% endif %}
                 </div>
 
-                <div class="form-group">
-                    <label for="exampleFormControlSelect1">Description</label>
-                    <select class="form-control" id="exampleFormControlSelect1">
-                        {{ form.scrf_token }}
-                        {{ form.description.name }}
 
-                        <div>{% for error in form.description.errors %}
-                            <span>{{ error }}</span>
+                    <label>Description</label>
+                    <form action="/budget/<int:budget_id>" method="POST">
+                        {{ form.csrf_token }}
+                        {{ form.description }}
+                        <ul>
+                            {% for error in form.description.errors %}
+                            <li style="color:red;">{{ error }}</li>
                             {% endfor %}
-                        </div>
-                        {% for d in desc.name %}
-                        <option>d</option>
-                        {% endfor %}
+                        </ul>
+                        <input type="submit">
+                    </form>
 
-                    </select>
-                </div>
+
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
@@ -65,7 +63,7 @@
 {% endblock content %}
 
 {% block balance %}
-Your current balance is: {{budget.bal}}
+Your current balance is: {{ bal.balance }}UAH
 {% endblock balance %}
 
 {% block to_see %}

@@ -56,7 +56,10 @@
             {% endif %}
           {% endwith %}
 
-          {% block content %}{% endblock %}
+          {% block content %}
+          {% endblock %}
+          {% block analyze %}
+          {% endblock analyze %}
         </div>
           <div class="col-md-4">
               {% if current_user.is_authenticated %}

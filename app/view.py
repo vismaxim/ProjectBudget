@@ -100,24 +100,25 @@ def account():
 @login_required
 def budget(budget_id):
     b = Budgets.query.get(budget_id)
-    transact = Transactions.query.order_by(Transactions.id.desc()).get(budget_id)
-    desc = Descriptions.query.get
+    transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
+    # desc = Descriptions.query.get
     form = BalanceForm()
+    # form.description.choices = [(description.id, description.name) for description in Descriptions.query.all()]
+
     if form.validate_on_submit():
         if form.income.data == 0 and form.expense.data == 0:
             flash('Insert, at least, income or expense')
             return redirect(url_for('budget'))
-        transact.balance -= form.expense.data
-        transact.balance += form.income.data
-        db.session.add(transact)
-        db.session.commit()
+        tr = transact.balance - form.expense.data
+        tr = tr + form.income.data
+
         transaction = Transactions(budget_id=budget_id, income=form.income.data, expense=form.expense.data,
-                             user_id=current_user.id, balance=transact.balance)
+                             user_id=current_user.id, balance=tr, description=form.description.data.name)
 
         db.session.add(transaction)
         db.session.commit()
         return redirect(url_for('budget', budget_id=budget_id))
-    return render_template('budget.html', title='enter data', budget=b, bal=transact.balance, desc=desc, form=form)
+    return render_template('budget.html', title='enter data', budget=b, bal=transact, form=form)
 
 
 @app.route("/budget/<int:budget_id>/analyze", methods=['GET', "POST"])
@@ -125,7 +126,16 @@ def budget(budget_id):
 def analyze_bud(budget_id):
     b = Budgets.query.get(budget_id)
     form = AnalyzeForm()
-    return render_template('analyze_bud.html', title='Analyze Budget', budget=b, form=form)
+    # form.filtr.choices = [(filtr.id, filtr.name) for filtr in Descriptions.query.all()]
+    transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
+    # desc = Descriptions.query.get
+
+    if form.validate_on_submit():
+        inc = (db.session.query(db.func.sum(Transactions.income)), Transactions.query.filter_by(budget_id=budget_id)
+               .filter(Transactions.date >= form.datestart).filter(Transactions.date <= form.dateend))
+        income = db.session.query(db.func.sum(Transactions.income)).filter_by(budget_id=budget_id).scalar()
+        return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form, inc=inc, income=income)
+    return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form)
 
 
 @app.route("/adduser", methods=['GET', 'POST'])

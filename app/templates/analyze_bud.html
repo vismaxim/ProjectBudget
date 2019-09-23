@@ -33,6 +33,17 @@
                         {{ form.dateend(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
+                <label>Filter</label>
+                    <form action="/budget/<int:budget_id>" method="POST">
+                        {{ form.csrf_token }}
+                        {{ form.filtr }}
+                        <ul>
+                            {% for error in form.filtr.errors %}
+                            <li style="color:red;">{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        <input type="submit">
+                    </form>
 
 
             </fieldset>
@@ -43,3 +54,15 @@
     </div>
 
 {% endblock content %}
+
+{% block analyze %}
+
+{{ analyze }}
+{{ inc }}
+{{ income }}
+
+{% endblock analyze %}
+
+{% block balance %}
+Your current balance is: {{ bal.balance}}UAH
+{% endblock balance %}

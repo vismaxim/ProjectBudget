@@ -1,5 +1,5 @@
 from app import db, login_manager
-from datetime import datetime
+from datetime import datetime, date
 from flask_login import UserMixin
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
@@ -47,11 +47,14 @@ class Transactions(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     budget_id = db.Column(db.Integer, db.ForeignKey('Budgets.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
-    date = db.Column(db.DateTime, default=datetime.now())
+    date = db.Column(db.DateTime, default=date.today())
     income = db.Column(db.Float, default=0)
     expense = db.Column(db.Float, default=0)
     balance = db.Column(db.Float)
     description = db.Column(db.String, db.ForeignKey('descript.id'))
+
+    def __repr__(self):
+        return "{}".format(self.id)
 
     def __init__(self, *args, **kwargs):
         super(Transactions, self).__init__(*args, **kwargs)
@@ -64,10 +67,10 @@ class Descriptions(db.Model):
     name = db.Column(db.String(20))
 
     def __repr__(self):
-        return '<{}>'.format(self.name)
+        return "{}".format(self.name)
 
-    # def __init__(self, *args, **kwargs):
-    #     super(Descriptions, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Descriptions, self).__init__(*args, **kwargs)
 
 
 db.create_all()
