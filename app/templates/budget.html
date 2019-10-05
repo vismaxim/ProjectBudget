@@ -54,9 +54,7 @@
 
 
             </fieldset>
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
+
         </form>
     </div>
 
@@ -66,12 +64,12 @@
 Your current balance is: {{ bal.balance }}UAH
 {% endblock balance %}
 
-{% block to_see %}
+{% block analyze_bud %}
 <a class="list-group-item list-group-item-light" href="{{ url_for('analyze_bud', budget_id=budget.id) }}">Analyze Budget</a>
 {% endblock %}
 
 {% block button_del %}
-    <button type="button" class="list-group-item list-group-item-light" data-toggle="modal" data-target="#deleteModal">Delete Budget</button>
+ <button type="button" class="list-group-item list-group-item-light text-left" data-toggle="modal" data-target="#deleteModal">Delete Budget</button>
 <!-- Modal -->
   <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

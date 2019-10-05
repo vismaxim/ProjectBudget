@@ -64,24 +64,13 @@
           <div class="col-md-4">
               {% if current_user.is_authenticated %}
               <div class="content-section">
-                  <h3>Sidebar  </h3>
+                  <h3> Budgetbar  </h3>
                   <p class='text-muted'>{% block balance %}{% endblock %}
                   <ul class="list-group">
                       <a class="list-group-item list-group-item-light" href="{{ url_for('create_budget') }}">Create Budget</a>
-                      {% block to_see %}{% endblock %}
-                      <a class="list-group-item list-group-item-light" href="{{ url_for('add_user') }}">Add User</a>
-                      <div class="dropdown">
-                        <a class="list-group-item list-group-item-light" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Choose budget
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                          <a class="dropdown-item" href="#">action</a>
-                          <a class="dropdown-item" href="#">Another action</a>
-                          <a class="dropdown-item" href="#">Something else here</a>
-                        </div>
-                      </div>
+                      {% block analyze_bud %}{% endblock %}
                       {% block button_del %}{% endblock %}
-                          <li class="list-group-item list-group-item-light">etc</li>
+                      {% block cur_bud %}{% endblock %}
                   </ul>
                   </p>
               </div>

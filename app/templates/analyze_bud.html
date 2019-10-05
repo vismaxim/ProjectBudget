@@ -47,9 +47,7 @@
 
 
             </fieldset>
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
+
         </form>
     </div>
 
@@ -57,12 +55,38 @@
 
 {% block analyze %}
 
-<br>Your income in period: {{ income }} UAH</br>
-<br>Your expense in period: {{ expense }} UAH</br>
+<br>Your income in period: {{ income }} UAH
+<br>Your expense in period: {{ expense }} UAH
+<br>
+<br>
+<br>
+<table border="1" cellpadding="15">
+    <tbody>
+    <th>  DATE  </th>
+    <th>  INCOME  </th>
+    <th>  EXPENSE  </th>
+    <th>  BALANCE  </th>
+    <th>  DESCRIPTION  </th>
+    {% for i in items %}
+    <tr>
+        <td>{{ i[0] }}</td>
+        <td>{{ i[1] }}</td>
+        <td>{{ i[2] }}</td>
+        <td>{{ i[3] }}</td>
+        <td>{{ i[4] }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
 
 
 {% endblock analyze %}
 
 {% block balance %}
-Your current balance is: {{ bal.balance}}UAH
+Your current balance is: {{ bal.balance }}UAH
 {% endblock balance %}
+{% block cur_bud %}
+<a class="list-group-item list-group-item-light" href="{{ url_for('budget', budget_id=budget.id) }}">Current Budget</a>
+{% endblock %}

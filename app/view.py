@@ -1,10 +1,12 @@
 import os
+import secrets
 from app import app, db, bcrypt
 from flask import render_template, flash, url_for, redirect, request
-from forms import RegistrationForm, LoginForm, AddUserForm, BalanceForm, CreateBudgetForm, AnalyzeForm
+from forms import RegistrationForm, LoginForm, BalanceForm, CreateBudgetForm, AnalyzeForm, UpdateAccountForm
 from datetime import timedelta, datetime, date
 from flask_login import login_user, current_user, logout_user, login_required
 from models import Users, Transactions, Budgets, Descriptions
+from PIL import Image
 
 
 @app.route("/")
@@ -38,15 +40,8 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('budgets'))
         else:
-            flash('Login Unsuccessful. Please check username and password', 'danger')
+            flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
-
-
-# @app.route("/<str:current_user.username>")
-# @login_required
-# def user(current_user):
-#     b = Budgets.query.get(current_user)
-#     return render_template('user.html', title=b.title, b=b)
 
 
 @app.route("/logout")
@@ -58,7 +53,8 @@ def logout():
 @app.route("/budgets")
 def budgets():
     budgets = Budgets.query.filter_by(user_id=current_user.id)
-    return render_template('budgets.html', budgets=budgets)
+    budgetsname = db.session.query(Budgets.budgetname).filter_by(user_id=current_user.id)
+    return render_template('budgets.html', budgets=budgets, budgetsname=budgetsname)
 
 
 @app.route("/create_budget", methods=['GET', 'POST'])
@@ -90,30 +86,25 @@ def del_budget(budget_id):
     return redirect(url_for('budgets'))
 
 
-@app.route("/account")
-@login_required
-def account():
-    return render_template('account.html', title='Account')
-
-
 @app.route("/budget/<int:budget_id>", methods=['GET', "POST"])
 @login_required
 def budget(budget_id):
     b = Budgets.query.get(budget_id)
     transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
-    # desc = Descriptions.query.get
     form = BalanceForm()
-    # form.description.choices = [(description.id, description.name) for description in Descriptions.query.all()]
 
     if form.validate_on_submit():
         if form.income.data == 0 and form.expense.data == 0:
             flash('Insert, at least, income or expense')
-            return redirect(url_for('budget'))
+            return redirect(url_for('budget', budget_id=budget_id))
+        # if form.description.data == None:
+        #     flash('Choose description')
+        #     return redirect(url_for('budget', budget_id=budget_id))
         tr = transact.balance - form.expense.data
         tr = tr + form.income.data
 
         transaction = Transactions(budget_id=budget_id, income=form.income.data, expense=form.expense.data,
-                             user_id=current_user.id, balance=tr, description=form.description.data.name)
+                             user_id=current_user.id, balance=tr, description=(None if form.description.data == None else form.description.data.name))
 
         db.session.add(transaction)
         db.session.commit()
@@ -126,9 +117,7 @@ def budget(budget_id):
 def analyze_bud(budget_id):
     b = Budgets.query.get(budget_id)
     form = AnalyzeForm()
-    # form.filtr.choices = [(filtr.id, filtr.name) for filtr in Descriptions.query.all()]
     transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
-    # desc = Descriptions.query.get
 
     if form.validate_on_submit():
         one_day = timedelta(1)
@@ -143,6 +132,11 @@ def analyze_bud(budget_id):
                 Transactions.budget_id == budget_id).filter(
                 Transactions.date >= form.datestart.data).filter(Transactions.date < (
                     form.dateend.data + one_day)).filter(Transactions.description == str(form.filtr.data)).scalar()
+            items = db.session.query(str(Transactions.date), Transactions.income, Transactions.expense,
+                                     Transactions.balance, Transactions.description).filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(Transactions.date < (
+                    form.dateend.data + one_day)).filter(Transactions.description == str(form.filtr.data)).all()
         else:
             income = db.session.query(db.func.sum(Transactions.income)). filter(
                 Transactions.budget_id == budget_id).filter(
@@ -153,12 +147,44 @@ def analyze_bud(budget_id):
                 Transactions.date >= form.datestart.data).filter(
                 Transactions.date < (form.dateend.data + one_day)).scalar()
 
+            items = db.session.query(str(Transactions.date), Transactions.income, Transactions.expense, Transactions.balance, Transactions.description). filter(
+                Transactions.budget_id == budget_id).filter(
+                Transactions.date >= form.datestart.data).filter(Transactions.date < (
+                    form.dateend.data + one_day)).all()
 
-        return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form, income=income, expense=expense)
+        return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form, income=income, expense=expense, items=items)
     return render_template('analyze_bud.html', title='Analyze Budget', budget=b, bal=transact, form=form)
 
 
-@app.route("/adduser", methods=['GET', 'POST'])
-def add_user():
-    add_user = Users.query
-    return render_template('adduser.html', title='Add User', users=add_user)
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
+
+@app.route("/account", methods=['GET', 'POST'])
+def account():
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+        db.session.commit()
+        flash('Your account has been updated!', 'success')
+        return redirect(url_for('account'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+    image_file = url_for('static', filename='profile_pics/' + str(current_user.image_file))
+    return render_template('account.html', title='Account',
+                           image_file=image_file, form=form)

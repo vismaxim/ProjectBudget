@@ -13,25 +13,16 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 
-# association_table = Table('association', Base.metadata,
-#     Column('Users_id', Integer, ForeignKey('Users.id')),
-    # Column('Budgets_id', Integer, ForeignKey('Budgets.id'))
-    #                       )
-
-
 class Users(db.Model, UserMixin):
     __tablename__ = "Users"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     email = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(20), nullable=False, unique=True)
-    # budget = relationship("Budgets",
-    #                         secondary=association_table)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
 
-    def __init__(self, username, email, password):
-        self.username = username
-        self.email = email
-        self.password = password
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
 
 class Budgets(db.Model):
