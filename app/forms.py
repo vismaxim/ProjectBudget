@@ -34,12 +34,13 @@ class LoginForm(FlaskForm):
 
 
 class CreateBudgetForm(FlaskForm):
-    budgetname = StringField('Enter Budget Name')
-    balance = FloatField('Enter initial balance')
+    budgetname = StringField('Enter Budget Name', validators=[DataRequired()])
+    balance = FloatField('Enter initial balance', default=0)
+    descriptions = StringField('Enter discriptions using blank')
     submit = SubmitField('Apply')
 
 
-def descript():
+def descr():
     return Descriptions.query
 
 
@@ -49,16 +50,18 @@ class NonValidateQuerySelectField(QuerySelectField):
 
 
 class BalanceForm(FlaskForm):
+
     income = FloatField('Income', default=0)
     expense = FloatField('Expense', default=0)
-    description = NonValidateQuerySelectField(query_factory=descript, allow_blank=True, get_label='name')
+    description = NonValidateQuerySelectField(query_factory=descr, allow_blank=True, get_label='name')
     submit = SubmitField('Apply')
 
 
 class AnalyzeForm(FlaskForm):
+
     datestart = DateField('Choose date from', format='%Y-%m-%d')
     dateend = DateField('Choose date to', format='%Y-%m-%d')
-    filtr = QuerySelectField(query_factory=descript, allow_blank=True, get_label='name')
+    filtr = QuerySelectField(query_factory=descr, allow_blank=True, get_label='name')
     submit = SubmitField('Apply')
 
 

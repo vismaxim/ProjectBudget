@@ -24,6 +24,7 @@
                         {{ form.budgetname(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
+
                 <div class="form-group">
                     {{ form.balance.label(class="form-control-label") }}
                     {% if form.balance.errors %}
@@ -35,6 +36,20 @@
                         </div>
                     {% else %}
                         {{ form.balance(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.descriptions.label(class="form-control-label") }}
+
+                    {% if form.descriptions.errors %}
+                        {{ form.descriptions(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.descriptions.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.descriptions(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
 

@@ -56,6 +56,7 @@ class Descriptions(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(20))
+    budget_id = db.Column(db.Integer, db.ForeignKey('Budgets.id'))
 
     def __repr__(self):
         return "{}".format(self.name)

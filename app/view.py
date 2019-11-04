@@ -54,6 +54,7 @@ def logout():
 def budgets():
     budgets = Budgets.query.filter_by(user_id=current_user.id)
     budgetsname = db.session.query(Budgets.budgetname).filter_by(user_id=current_user.id)
+
     return render_template('budgets.html', budgets=budgets, budgetsname=budgetsname)
 
 
@@ -67,8 +68,13 @@ def create_budget():
         db.session.commit()
         budget_id = db.session.query(Budgets.id).order_by(Budgets.id.desc())
         transact = Transactions(budget_id=budget_id, user_id=current_user.id, balance=form.balance.data)
-
         db.session.add(transact)
+        db.session.commit()
+        d1 = form.descriptions.data
+        d = d1.split(' ')
+        for name in d:
+            desc = Descriptions(budget_id=budget_id, name=name)
+            db.session.add(desc)
         db.session.commit()
         flash(f'Budget {form.budgetname.data} created')
         return redirect(url_for('budgets'))
@@ -80,6 +86,7 @@ def create_budget():
 def del_budget(budget_id):
     bud = Budgets.query.get(budget_id)
     db.session.query(Transactions).filter_by(budget_id=budget_id).delete()
+    db.session.query(Descriptions).filter_by(budget_id=budget_id).delete()
     db.session.delete(bud)
     db.session.commit()
     flash('Your budget has been deleted!', 'success')
@@ -91,7 +98,10 @@ def del_budget(budget_id):
 def budget(budget_id):
     b = Budgets.query.get(budget_id)
     transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
+
     form = BalanceForm()
+
+    form.description.query = Descriptions.query.filter_by(budget_id=budget_id)
 
     if form.validate_on_submit():
         if form.income.data == 0 and form.expense.data == 0:
@@ -117,6 +127,7 @@ def budget(budget_id):
 def analyze_bud(budget_id):
     b = Budgets.query.get(budget_id)
     form = AnalyzeForm()
+    form.filtr.query = Descriptions.query.filter_by(budget_id=budget_id)
     transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
 
     if form.validate_on_submit():
