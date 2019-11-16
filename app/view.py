@@ -1,7 +1,7 @@
 import os
 import secrets
 from app import app, db, bcrypt
-from flask import render_template, flash, url_for, redirect, request
+from flask import render_template, flash, url_for, redirect, request, abort
 from forms import RegistrationForm, LoginForm, BalanceForm, CreateBudgetForm, AnalyzeForm, UpdateAccountForm
 from datetime import timedelta, datetime, date
 from flask_login import login_user, current_user, logout_user, login_required
@@ -97,6 +97,8 @@ def del_budget(budget_id):
 @login_required
 def budget(budget_id):
     b = Budgets.query.get(budget_id)
+    if b.user_id != current_user.id:
+        abort(403)
     transact = Transactions.query.filter_by(budget_id=budget_id)[-1]
 
     form = BalanceForm()
@@ -107,9 +109,9 @@ def budget(budget_id):
         if form.income.data == 0 and form.expense.data == 0:
             flash('Insert, at least, income or expense')
             return redirect(url_for('budget', budget_id=budget_id))
-        # if form.description.data == None:
-        #     flash('Choose description')
-        #     return redirect(url_for('budget', budget_id=budget_id))
+        if form.description.data == None:
+            flash('Choose description')
+            return redirect(url_for('budget', budget_id=budget_id))
         tr = transact.balance - form.expense.data
         tr = tr + form.income.data
 
